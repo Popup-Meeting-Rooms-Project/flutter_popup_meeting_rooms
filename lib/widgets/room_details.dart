@@ -1,19 +1,18 @@
 import 'package:flutter/material.dart';
-import 'package:popup_meeting_rooms/business/floor.dart';
 import 'package:popup_meeting_rooms/business/room.dart';
 import 'package:popup_meeting_rooms/config/strings.dart';
 import 'package:popup_meeting_rooms/widgets/about.dart';
 
-class FloorDetails extends StatefulWidget {
-  FloorDetails({Key? key, required this.floor}) : super(key: key);
+class RoomDetails extends StatefulWidget {
+  RoomDetails({Key? key, required this.room}) : super(key: key);
 
-  final Floor floor;
+  final Room room;
 
   @override
-  _FloorDetailsState createState() => _FloorDetailsState();
+  _RoomDetailsState createState() => _RoomDetailsState();
 }
 
-class _FloorDetailsState extends State<FloorDetails> {
+class _RoomDetailsState extends State<RoomDetails> {
 
   @override
   Widget build(BuildContext context) {
@@ -28,7 +27,7 @@ class _FloorDetailsState extends State<FloorDetails> {
               backgroundColor: Colors.black,
               flexibleSpace: FlexibleSpaceBar(
                 title: Text(
-                  widget.floor.id.toString() + '. floor',
+                  widget.room.room_name,
                   style: TextStyle(
                       color: Colors.white,
                       fontSize: 16.0
@@ -41,14 +40,14 @@ class _FloorDetailsState extends State<FloorDetails> {
                 centerTitle: true,
               ),
             ),
-            SliverList(
+            /*SliverList(
               delegate: SliverChildBuilderDelegate(
                     (BuildContext context, int index) {
                       return _buildCard(widget.floor.rooms[index]);
                       },
                 childCount: widget.floor.rooms.length,
               ),
-            ),
+            ),*/
           ],
         ),
         floatingActionButton: FloatingActionButton(

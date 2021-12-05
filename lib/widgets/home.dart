@@ -1,11 +1,8 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:popup_meeting_rooms/business/building.dart';
-import 'package:popup_meeting_rooms/business/floor.dart';
 import 'package:popup_meeting_rooms/business/room.dart';
 import 'package:popup_meeting_rooms/config/strings.dart';
-import 'package:popup_meeting_rooms/widgets/floor_details.dart';
-import 'package:popup_meeting_rooms/widgets/rooms_by_floor.dart';
+import 'package:popup_meeting_rooms/widgets/room_details.dart';
 import 'about.dart';
 import 'package:http/http.dart' as http;
 
@@ -24,8 +21,9 @@ class _HomeState extends State<Home> {
   Widget build(BuildContext context) {
     return MaterialApp(
       home: Scaffold(
-        body: FutureBuilder<List<Building>>(
-          future: fetchData(http.Client()), // fetchRooms(http.Client()),
+        body: StreamBuilder<List<Room>>(
+          stream: updateRooms(Duration(seconds: 5), http.Client()), // fetchRooms(http.Client()),
+          //initialData: getAllRooms(http.Client()),
           builder: (context, snapshot) {
             if (snapshot.hasError) {
               print(snapshot);
@@ -35,7 +33,7 @@ class _HomeState extends State<Home> {
                     'Error: ${snapshot.error}'
                 ),
               );
-            } else if (snapshot.hasData) {
+            } else if (snapshot.connectionState == ConnectionState.done && snapshot.hasData) {
               return CustomScrollView(
                 shrinkWrap: true,
                 slivers: <Widget>[
@@ -62,9 +60,9 @@ class _HomeState extends State<Home> {
                   SliverList(
                     delegate: SliverChildBuilderDelegate(
                           (BuildContext context, int index) {
-                            return _buildCard(snapshot.data![0].floors[index]);
+                            return _buildCard(snapshot.data![index]);
                           },
-                      childCount: snapshot.data![0].floors.length,
+                      childCount: snapshot.data!.length,
                     ),
                   ),
                 ],
@@ -111,7 +109,7 @@ class _HomeState extends State<Home> {
     );
   }
 
-  Widget _buildCard(Floor floor) {
+  Widget _buildCard(Room room) {
 
     return Card(
       child: InkWell(
@@ -119,8 +117,8 @@ class _HomeState extends State<Home> {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => FloorDetails(
-                floor: floor,
+              builder: (context) => RoomDetails(
+                room: room,
               ),
             ),
           );
@@ -130,7 +128,7 @@ class _HomeState extends State<Home> {
           children: <Widget>[
             ListTile(
               title: Text(
-                floor.id.toString() + '. floor',
+                room.room_name,
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 20,
@@ -139,7 +137,7 @@ class _HomeState extends State<Home> {
               ),
               minVerticalPadding: 2, // TODO find how implement a greater space between title and subtitle
               subtitle: Text(
-                _countAvailableRooms(floor).toString() + ' room(s) available',
+                room.id.toString(),
                 style: TextStyle(
                   fontStyle: FontStyle.italic,
                   fontSize: 16,
@@ -147,7 +145,7 @@ class _HomeState extends State<Home> {
                 ),
               ),
             ),
-            Container(
+            /*Container(
               margin: EdgeInsets.fromLTRB(4, 4, 4, 4),
               padding: EdgeInsets.fromLTRB(6, 6, 6, 6),
               decoration: BoxDecoration(
@@ -158,16 +156,16 @@ class _HomeState extends State<Home> {
                   floor: floor,
                 ),
               ),
-            ),
+            ),*/
           ],
         ),
       ),
       elevation: 1.0,
-      color: _changeFloorColor(floor),
+      color: Colors.white, // _changeFloorColor(floor),
     );
 
   }
-
+/*
   int _countAvailableRooms(Floor floor) {
     int availableRooms = 0;
     for(Room room in floor.rooms) {
@@ -185,9 +183,9 @@ class _HomeState extends State<Home> {
       return Colors.redAccent;
     }
   }
-
+*/
 }
-
+/*
 Future<List<Building>> fetchData(http.Client client) async {
   final response = await client
       .get(Uri.parse('http://206.189.16.14/getAllRoomsTesting'));
@@ -202,6 +200,26 @@ List<Building> parseData(String responseBody) {
   final parsed = jsonDecode(responseBody).cast<Map<String, dynamic>>();
 
   return parsed.map<Building>((json) => Building.fromJson(json)).toList();
+}
+*/
+Future<List<Room>> getAllRooms(http.Client client) async {
+  final response = await client
+      .get(Uri.parse('http://206.189.16.14/getAllRooms'));
+
+  return parseData(response.body);
+}
+
+List<Room> parseData(String responseBody) {
+  final parsed = jsonDecode(responseBody).cast<Map<String, dynamic>>();
+
+  return parsed.map<Room>((json) => Room.fromJson(json)).toList();
+}
+
+Stream<List<Room>> updateRooms(Duration refreshTime, http.Client client) async* {
+  while (true) {
+    await Future.delayed(refreshTime);
+    yield await getAllRooms(client);
+  }
 }
 /*
 update(http.Client client) async {
