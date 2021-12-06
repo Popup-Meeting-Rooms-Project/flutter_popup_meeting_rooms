@@ -33,7 +33,7 @@ class _HomeState extends State<Home> {
                     'Error: ${snapshot.error}'
                 ),
               );
-            } else if (snapshot.connectionState == ConnectionState.done && snapshot.hasData) {
+            } else if (snapshot.connectionState == ConnectionState.active && snapshot.hasData) {
               return CustomScrollView(
                 shrinkWrap: true,
                 slivers: <Widget>[
@@ -137,7 +137,7 @@ class _HomeState extends State<Home> {
               ),
               minVerticalPadding: 2, // TODO find how implement a greater space between title and subtitle
               subtitle: Text(
-                room.id.toString(),
+                room.detected.toString(),
                 style: TextStyle(
                   fontStyle: FontStyle.italic,
                   fontSize: 16,
